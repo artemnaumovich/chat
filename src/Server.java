@@ -3,7 +3,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 
 public class Server {
@@ -20,7 +23,7 @@ public class Server {
             clientSocket = socket;
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-            log("Client " + socket.getInetAddress() + ": " + socket.getPort() + " connected");
+            log("INFO", "Client " + socket.getInetAddress() + ": " + socket.getPort() + " connected");
         }
 
         private void sendAll(String message) throws IOException {
@@ -69,7 +72,7 @@ public class Server {
             do {
                 try {
                     name = receiveMessage();
-                    log("Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " try to join with name " + name);
+                    log("INFO","Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " try to join with name " + name);
                     if (clientsNames.contains(name)) {
                         sendTo(out, "taken");
                     } else {
@@ -77,20 +80,20 @@ public class Server {
                         clientsNames.add(name);
                         sendTo(out, "joined");
                         sendAll(name + " joined to the chat");
-                        log("Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " joined with name " + name);
+                        log("INFO","Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " joined with name " + name);
                         showClient();
                         break;
                     }
                 } catch (SocketException e) {
                     try {
                         disconnect();
-                        log("Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " disconnected");
+                        log("INFO","Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " disconnected");
                     } catch (IOException ioe) {
-                        log("Failed to disconnect client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
+                        log("ERROR","Failed to disconnect client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
                     }
                     return;
                 } catch (IOException e) {
-                    log("Failed to receive name from " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
+                    log("ERROR","Failed to receive name from " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
                 }
             } while (clientSocket.isConnected());
 
@@ -102,20 +105,20 @@ public class Server {
                     try {
                         disconnect();
                         sendAll(name + " left the chat");
-                        log("Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " disconnected");
+                        log("INFO","Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " disconnected");
                     } catch (IOException ioe) {
-                        log("Failed to disconnect client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
+                        log("ERROR","Failed to disconnect client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
                     }
                     return;
                 } catch (IOException e) {
-                    log("Failed to receive message from " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
+                    log("ERROR","Failed to receive message from " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
                     continue;
                 }
 
                 try {
                     sendAll(message);
                 } catch (IOException e) {
-                    log("Failed to send message for all clients from " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
+                    log("ERROR","Failed to send message for all clients from " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
                 }
             }
 
@@ -126,8 +129,11 @@ public class Server {
         Server server = new Server();
     }
 
-    private void log(String message) {
-        System.out.println(message);
+    private void log(String type, String message) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        String timeStamp = dateFormat.format(date);
+        System.out.println(timeStamp + " | " + type + " | " + message);
     }
 
     private Server() {
@@ -139,12 +145,12 @@ public class Server {
                     Thread thread = new Thread(new Connection(socket));
                     thread.start();
                 } catch (IOException e) {
-                    log("Connection failed");
+                    log("ERROR","Connection failed");
                     throw new IOException();
                 }
             }
         } catch (IOException e) {
-            log("Unable to start server on port 8686");
+            log("ERROR","Unable to start server on port 8686");
         }
     }
 }
