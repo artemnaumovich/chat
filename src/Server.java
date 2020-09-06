@@ -26,6 +26,30 @@ public class Server {
             log("INFO", "Client " + socket.getInetAddress() + ": " + socket.getPort() + " connected");
         }
 
+        private String formatInfoMessage(String message) {
+            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+            Date date = new Date();
+            String timeStamp = dateFormat.format(date);
+            return "<" + timeStamp + "> : " + message;
+        }
+
+        private String formatPublicMessage(String message) {
+            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+            Date date = new Date();
+            String timeStamp = dateFormat.format(date);
+            return "<" + timeStamp + " " + name + "> : " + message;
+        }
+
+        private void sendInfoMessage(String message) throws IOException{
+            String formattedMessage = formatInfoMessage(message);
+            sendAll(formattedMessage);
+        }
+
+        private void sendPublicMessage(String message) throws IOException {
+            String formattedMessage = formatPublicMessage(message);
+            sendAll(formattedMessage);
+        }
+
         private void sendAll(String message) throws IOException {
             for (Socket client: clientsSockets) {
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
@@ -79,7 +103,7 @@ public class Server {
                         clientsSockets.add(clientSocket);
                         clientsNames.add(name);
                         sendTo(out, "joined");
-                        sendAll(name + " joined to the chat");
+                        sendInfoMessage(name + " joined to the chat");
                         log("INFO","Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " joined with name " + name);
                         showClient();
                         break;
@@ -104,7 +128,7 @@ public class Server {
                 } catch (SocketException e) {
                     try {
                         disconnect();
-                        sendAll(name + " left the chat");
+                        sendInfoMessage(name + " left the chat");
                         log("INFO","Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " disconnected");
                     } catch (IOException ioe) {
                         log("ERROR","Failed to disconnect client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
@@ -116,7 +140,7 @@ public class Server {
                 }
 
                 try {
-                    sendAll(message);
+                    sendPublicMessage(message);
                 } catch (IOException e) {
                     log("ERROR","Failed to send message for all clients from " + clientSocket.getInetAddress() + ": " + clientSocket.getPort());
                 }
