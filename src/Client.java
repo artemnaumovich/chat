@@ -93,6 +93,7 @@ public class Client {
 
             @Override
             public void run() {
+                frame.dispose();
                 frame = new JFrame("Chat");
                 frame.setSize(700, 700);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -108,6 +109,7 @@ public class Client {
                 JPanel messagesPanel = new JPanel();
                 messagesPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 messages = new JTextArea(20, 30);
+                messages.setLineWrap(true);
                 messages.setFont(new Font("Arial", Font.PLAIN, 20));
 
                 JScrollPane scroll = new JScrollPane(messages);
@@ -120,6 +122,7 @@ public class Client {
                 JPanel sendPanel = new JPanel();
                 sendPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
                 messageInput = new JTextArea(3, 30);
+                messageInput.setLineWrap(true);
                 messageInput.setFont(new Font("Arial", Font.PLAIN, 16));
 
                 JScrollPane inputScroll = new JScrollPane(messageInput);
@@ -127,6 +130,7 @@ public class Client {
                 inputScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
                 JButton sendButton = new JButton("Send");
+                sendButton.addActionListener(new ButtonListener());
                 sendButton.setBackground(Color.CYAN);
 
                 sendPanel.add(inputScroll);
@@ -181,7 +185,8 @@ public class Client {
             while (!clientSocket.isClosed()) {
                 try {
                     String message = receiveMessage();
-                    messages.append(message);
+                    messages.append(message + "\n");
+                    messages.setCaretPosition(messages.getDocument().getLength());
                 } catch (IOException e) {
                     log("ERROR", "Failed to receive message to server");
                     try {
@@ -206,6 +211,15 @@ public class Client {
                     } catch (IOException e) {
                         log("ERROR", "Failed to send message to server");
                     }
+                } else if (command.equals("Send")) {
+                    try {
+                        send(messageInput.getText());
+                        messageInput.setText(null);
+                    } catch (IOException e) {
+                        log("ERROR", "Failed to send message to server");
+                    }
+                } else {
+                    log("ERROR", "Unexpected command");
                 }
             }
         }
@@ -229,6 +243,7 @@ public class Client {
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         } catch (IOException e) {
             log("ERROR","Failed to connect to server 127.0.0.1:8686");
+            return;
         }
 
         log("INFO", "Connect to server 127.0.0.1:8686");
