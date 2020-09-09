@@ -15,8 +15,22 @@ public class Client {
     private BufferedReader in;
     private BufferedWriter out;
 
-    private String receiveMessage() throws IOException {
+    private Client() {
+        try {
+            clientSocket = new Socket("127.0.0.1", 8686);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+        } catch (IOException e) {
+            log("ERROR","Failed to connect to server 127.0.0.1:8686");
+            return;
+        }
 
+        log("INFO", "Connect to server 127.0.0.1:8686");
+
+        new ClientWindow();
+    }
+
+    private String receiveMessage() throws IOException {
         String lenStr = in.readLine();
 
         int len = Integer.parseInt(lenStr);
@@ -37,6 +51,13 @@ public class Client {
         out.flush();
     }
 
+    private void log(String type, String message) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        String timeStamp = dateFormat.format(date);
+        System.out.println(timeStamp + " | " + type + " | " + message);
+    }
+
     private class ClientWindow{
 
         private JFrame frame;
@@ -44,110 +65,6 @@ public class Client {
         private JPanel errorPanel;
         private JTextArea messages;
         private JTextArea messageInput;
-
-        private class setJoinUI implements Runnable {
-
-            @Override
-            public void run() {
-                frame = new JFrame("Join");
-                frame.setSize(380, 300);
-                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-
-                JPanel joinPanel = new JPanel();
-                joinPanel.setBorder(BorderFactory.createEmptyBorder(100, 0, 0, 0));
-                JLabel nameLabel = new JLabel("Name:");
-                nameLabel.setFont(new Font("Arial", Font.PLAIN, 15));
-                nameInput = new JTextField(15);
-                nameInput.setFont(new Font("Arial", Font.PLAIN, 15));
-                JButton joinButton = new JButton("Join");
-                joinButton.addActionListener(new ButtonListener());
-                joinButton.setFont(new Font("Arial", Font.PLAIN, 15));
-
-                joinPanel.add(nameLabel);
-                joinPanel.add(nameInput);
-                joinPanel.add(joinButton);
-
-
-                errorPanel = new JPanel();
-                errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 100, 0));
-                JLabel errorLabel = new JLabel("This name is already taken");
-                errorLabel.setFont(new Font("Arial", Font.BOLD, 15));
-                errorPanel.setVisible(false);
-
-                errorPanel.add(errorLabel);
-
-
-                frame.getContentPane().add(BorderLayout.NORTH, joinPanel);
-                frame.getContentPane().add(BorderLayout.SOUTH, errorPanel);
-
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-            }
-
-
-        }
-
-
-        private class setChatUI implements Runnable {
-
-            @Override
-            public void run() {
-                frame.dispose();
-                frame = new JFrame("Chat");
-                frame.setSize(700, 700);
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                JPanel headerPanel = new JPanel();
-                JLabel nameLabel = new JLabel("Global Chat");
-                nameLabel.setFont(new Font("Arial", Font.BOLD, 30));
-                headerPanel.setBackground(Color.LIGHT_GRAY);
-
-                headerPanel.add(nameLabel);
-
-
-                JPanel messagesPanel = new JPanel();
-                messagesPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-                messages = new JTextArea(20, 30);
-                messages.setLineWrap(true);
-                messages.setFont(new Font("Arial", Font.PLAIN, 20));
-
-                JScrollPane scroll = new JScrollPane(messages);
-                scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-                scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-                messagesPanel.add(scroll);
-
-
-                JPanel sendPanel = new JPanel();
-                sendPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-                messageInput = new JTextArea(3, 30);
-                messageInput.setLineWrap(true);
-                messageInput.setFont(new Font("Arial", Font.PLAIN, 16));
-
-                JScrollPane inputScroll = new JScrollPane(messageInput);
-                inputScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-                inputScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-                JButton sendButton = new JButton("Send");
-                sendButton.addActionListener(new ButtonListener());
-                sendButton.setBackground(Color.CYAN);
-
-                sendPanel.add(inputScroll);
-                sendPanel.add(sendButton);
-                sendPanel.setBackground(Color.LIGHT_GRAY);
-
-
-                frame.getContentPane().add(BorderLayout.NORTH, headerPanel);
-                frame.getContentPane().add(BorderLayout.CENTER, messagesPanel);
-                frame.getContentPane().add(BorderLayout.SOUTH, sendPanel);
-
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-
-            }
-        }
-
 
         public ClientWindow() {
             SwingUtilities.invokeLater(new setJoinUI());
@@ -199,27 +116,156 @@ public class Client {
                 }
             }
 
+            frame.dispose();
+
+        }
+
+        private class setJoinUI implements Runnable {
+
+            private String TITLE = "Join";
+            private int WIDTH = 380;
+            private int HEIGHT = 300;
+            private Font FONT = new Font("Arial", Font.PLAIN, 15);
+
+            @Override
+            public void run() {
+                frame = new JFrame(TITLE);
+                frame.setSize(WIDTH, HEIGHT);
+                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+                JPanel joinPanel = new JPanel();
+                errorPanel = new JPanel();
+
+                JLabel nameLabel = new JLabel("Name:");
+                nameInput = new JTextField(15);
+                JButton joinButton = new JButton("Join");
+
+                JLabel errorLabel = new JLabel("This name is already taken");
+
+                joinPanel.setBorder(BorderFactory.createEmptyBorder(100, 0, 0, 0));
+                errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 100, 0));
+
+                nameLabel.setFont(FONT);
+                nameInput.setFont(FONT);
+                joinButton.setFont(FONT);
+                errorLabel.setFont(FONT);
+
+                joinButton.addActionListener(new ButtonListener());
+
+                joinPanel.add(nameLabel);
+                joinPanel.add(nameInput);
+                joinPanel.add(joinButton);
+                errorPanel.add(errorLabel);
+
+                errorPanel.setVisible(false);
+
+                nameInput.setFocusable(true);
+
+                frame.getContentPane().add(BorderLayout.NORTH, joinPanel);
+                frame.getContentPane().add(BorderLayout.SOUTH, errorPanel);
+
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            }
+
+
+        }
+
+        private class setChatUI implements Runnable {
+
+            private String TITLE = "Chat";
+            private int WIDTH = 700;
+            private int HEIGHT = 700;
+            private String CHAT_NAME = "GLOBAL CHAT";
+            private int MESSAGES_ROWS = 20;
+            private int MESSAGES_COLUMNS = 30;
+            private int INPUT_ROWS = 3;
+            private int INPUT_COLUMNS = 30;
+
+            private Font CHAT_NAME_FONT = new Font("Arial", Font.BOLD, 30);
+            private Font MESSAGES_FONT = new Font("Arial", Font.PLAIN, 20);
+            private Font INPUT_FONT = new Font("Arial", Font.PLAIN, 16);
+            private Font BUTTON_FONT = new Font("Arial", Font.BOLD, 16);
+
+            @Override
+            public void run() {
+                frame.dispose();
+                frame = new JFrame(TITLE);
+                frame.setSize(WIDTH, HEIGHT);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+                JPanel headerPanel = new JPanel();
+                JLabel nameLabel = new JLabel(CHAT_NAME);
+
+                JPanel messagesPanel = new JPanel();
+                messages = new JTextArea(MESSAGES_ROWS, MESSAGES_COLUMNS);
+                JScrollPane scroll = new JScrollPane(messages);
+
+                JPanel sendPanel = new JPanel();
+                messageInput = new JTextArea(INPUT_ROWS, INPUT_COLUMNS);
+                JScrollPane inputScroll = new JScrollPane(messageInput);
+                JButton sendButton = new JButton("Send");
+
+                nameLabel.setFont(CHAT_NAME_FONT);
+                messages.setFont(MESSAGES_FONT);
+                messageInput.setFont(INPUT_FONT);
+                sendButton.setFont(BUTTON_FONT);
+
+                messagesPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                sendPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+
+                messages.setEditable(false);
+                messages.setLineWrap(true);
+                messageInput.setLineWrap(true);
+
+                scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+                scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                inputScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+                inputScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+                sendButton.addActionListener(new ButtonListener());
+
+                sendButton.setBackground(Color.CYAN);
+                headerPanel.setBackground(Color.LIGHT_GRAY);
+                sendPanel.setBackground(Color.LIGHT_GRAY);
+
+                headerPanel.add(nameLabel);
+                messagesPanel.add(scroll);
+                sendPanel.add(inputScroll);
+                sendPanel.add(sendButton);
+
+
+                frame.getContentPane().add(BorderLayout.NORTH, headerPanel);
+                frame.getContentPane().add(BorderLayout.CENTER, messagesPanel);
+                frame.getContentPane().add(BorderLayout.SOUTH, sendPanel);
+
+                frame.setLocationRelativeTo(null);
+
+                frame.setVisible(true);
+            }
         }
 
         private class ButtonListener implements ActionListener {
+
             @Override
             public void actionPerformed(ActionEvent event) {
                 String command = event.getActionCommand();
+                String message;
+
                 if (command.equals("Join")) {
-                    try {
-                        send(nameInput.getText());
-                    } catch (IOException e) {
-                        log("ERROR", "Failed to send message to server");
-                    }
+                    message = nameInput.getText();
                 } else if (command.equals("Send")) {
-                    try {
-                        send(messageInput.getText());
-                        messageInput.setText(null);
-                    } catch (IOException e) {
-                        log("ERROR", "Failed to send message to server");
-                    }
+                    message = messageInput.getText();
+                    messageInput.setText(null);
                 } else {
                     log("ERROR", "Unexpected command");
+                    return;
+                }
+
+                try {
+                    send(message);
+                } catch (IOException e) {
+                    log("ERROR", "Failed to send message to server");
                 }
             }
         }
@@ -227,28 +273,6 @@ public class Client {
 
     public static void main(String[] args) {
         Client client = new Client();
-    }
-
-    private void log(String type, String message) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date date = new Date();
-        String timeStamp = dateFormat.format(date);
-        System.out.println(timeStamp + " | " + type + " | " + message);
-    }
-
-    private Client() {
-        try {
-            clientSocket = new Socket("127.0.0.1", 8686);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-        } catch (IOException e) {
-            log("ERROR","Failed to connect to server 127.0.0.1:8686");
-            return;
-        }
-
-        log("INFO", "Connect to server 127.0.0.1:8686");
-
-        new ClientWindow();
     }
 
 }
