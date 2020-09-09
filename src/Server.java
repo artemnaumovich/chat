@@ -18,11 +18,13 @@ public class Server {
         private String name;
         private BufferedReader in;
         private BufferedWriter out;
+        private boolean joined;
 
         public Connection(Socket socket) throws IOException {
             clientSocket = socket;
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            joined = false;
             log("INFO", "Client " + socket.getInetAddress() + ": " + socket.getPort() + " connected");
         }
 
@@ -57,10 +59,12 @@ public class Server {
             }
         }
 
-        private void disconnect () throws IOException {
+        private void disconnect() throws IOException {
             clientSocket.close();
-            clientsSockets.remove(clientSocket);
-            clientsNames.remove(name);
+            if (joined) {
+                clientsSockets.remove(clientSocket);
+                clientsNames.remove(name);
+            }
         }
 
         private String receiveMessage() throws IOException {
@@ -102,6 +106,7 @@ public class Server {
                     } else {
                         clientsSockets.add(clientSocket);
                         clientsNames.add(name);
+                        joined = true;
                         sendTo(out, "joined");
                         sendInfoMessage(name + " joined to the chat");
                         log("INFO","Client " + clientSocket.getInetAddress() + ": " + clientSocket.getPort() + " joined with name " + name);
