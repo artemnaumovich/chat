@@ -43,6 +43,11 @@ public class Client {
     }
 
     private void send(String message) throws IOException{
+        message = message.trim();
+        if (message.isEmpty()) {
+            return;
+        }
+
         String[] lines = message.split("\n");
         int len = lines.length;
 
