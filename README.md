@@ -19,19 +19,19 @@ You need to have installed JDK on your machine.
    ```
 3. Run Server
    ```sh
-   java Server 'host' 'port'
+   java Server 'port'
    ```
    For example
    ```sh
-   java Server 127.0.0.1 8585
+   java Server 8585
    ```
 4. Run Client
    ```sh
-   java Client
+   java Client 'host' 'port'
    ```
    For example
    ```sh
-   java Client 8585
+   java Client 127.0.0.1 8585
    ```
 5. Enter your name and click `join`
 
