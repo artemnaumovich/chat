@@ -15,17 +15,17 @@ public class Client {
     private BufferedReader in;
     private BufferedWriter out;
 
-    private Client() {
+    private Client(String host, int port) {
         try {
-            clientSocket = new Socket("127.0.0.1", 8686);
+            clientSocket = new Socket(host, port);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
         } catch (IOException e) {
-            log("ERROR","Failed to connect to server 127.0.0.1:8686");
+            log("ERROR","Failed to connect to server " + host + ":" + port);
             return;
         }
 
-        log("INFO", "Connect to server 127.0.0.1:8686");
+        log("INFO", "Connect to server " + host + ":" + port);
 
         new ClientWindow();
     }
@@ -56,7 +56,7 @@ public class Client {
         out.flush();
     }
 
-    private void log(String type, String message) {
+    private static void log(String type, String message) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         String timeStamp = dateFormat.format(date);
@@ -277,7 +277,19 @@ public class Client {
     }
 
     public static void main(String[] args) {
-        Client client = new Client();
+        if (args.length != 2) {
+            log("ERROR", "Execute a Client with args 'host' 'port'");
+            return;
+        }
+        String host = args[0];
+        int port;
+        try {
+            port = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+            log("ERROR", "Filed to parse port from args");
+            return;
+        }
+        Client client = new Client(host, port);
     }
 
 }
