@@ -70,7 +70,13 @@ public class Server {
         private String receiveMessage() throws IOException {
             String lenStr = in.readLine();
 
-            int len = Integer.parseInt(lenStr);
+            int len;
+            try {
+                len = Integer.parseInt(lenStr);
+            }
+            catch(NumberFormatException e){
+                throw new SocketException("Length of message is null");
+            }
             String[] lines = new String[len];
             for (int i = 0; i < len; i++) {
                 lines[i] = in.readLine();
