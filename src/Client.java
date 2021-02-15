@@ -25,7 +25,7 @@ public class Client {
             return;
         }
 
-        log("INFO", "Connect to server 127.0.0.1:8686");
+        log("INFO", "Connect to server " + host + ":" + port);
 
         new ClientWindow();
     }

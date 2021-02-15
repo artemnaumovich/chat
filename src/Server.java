@@ -161,18 +161,29 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        Server server = new Server();
+        if (args.length != 1) {
+            log("ERROR", "Execute a Server with args 'port'");
+            return;
+        }
+        int port;
+        try {
+            port = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            log("ERROR", "Filed to parse port from args");
+            return;
+        }
+        Server server = new Server(port);
     }
 
-    private void log(String type, String message) {
+    private static void log(String type, String message) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         String timeStamp = dateFormat.format(date);
         System.out.println(timeStamp + " | " + type + " | " + message);
     }
 
-    private Server() {
-        try (ServerSocket serverSocket = new ServerSocket(8686)) {
+    private Server(int port) {
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server is running...");
             while (true) {
                 try {
@@ -185,7 +196,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            log("ERROR","Unable to start server on port 8686");
+            log("ERROR","Unable to start server on port " + port);
         }
     }
 }
