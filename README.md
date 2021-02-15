@@ -34,7 +34,8 @@ You need to have installed JDK on your machine.
    java Client 8585
    ```
 5. Enter your name and click `join`
+
    ![Join example](/assets/join.png?raw=true "Join example")
-   
 6. Сhat with other users
+
    ![Chat example](/assets/chat.png?raw=true "Chat example")
